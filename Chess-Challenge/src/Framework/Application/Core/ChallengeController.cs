@@ -68,12 +68,14 @@ namespace ChessChallenge.Application
             board = new Board();
             pgns = new();
 
+        
             BotStatsA = new BotMatchStats("IBot");
             BotStatsB = new BotMatchStats("IBot");
             botMatchStartFens = FileHelper.ReadResourceFile("Fens.txt").Split('\n').Where(fen => fen.Length > 0).ToArray();
             botTaskWaitHandle = new AutoResetEvent(false);
 
-            StartNewGame(PlayerType.Human, PlayerType.MyBot);
+            StartNewGame(PlayerType.Human, PlayerType.MyBot); // Player as white
+            // StartNewGame(PlayerType.MyBot, PlayerType.Human); // Player as black
         }
 
         public void StartNewGame(PlayerType whiteType, PlayerType blackType)
@@ -97,13 +99,29 @@ namespace ChessChallenge.Application
             int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
             board.LoadPosition(botMatchStartFens[fenIndex]);
 
+            // board.LoadPosition("rn2kb1r/pp2p3/2ppBn2/5pBp/3P4/2NQP3/PqP2PPP/R3K2R w KQq - 0 12");
+            // Same as above, but player can attack queen in 1 move
+            // board.LoadPosition("rn1k1b1r/pp2p3/2ppBn2/5pBp/3P4/2NQP3/PqP2PPP/R4RK1 w - - 2 13");
+
+            // Knigh captures pawn results in 1 move queen blunder
+            // board.LoadPosition("r2q1rk1/pp1nbpp1/5n1p/2Pp4/8/2NQPN2/PP3PPB/3R1RK1 b - - 0 15");
+
+            //
+            // board.LoadPosition("rn2kbnr/p3p2p/b2pNpp1/q7/4PB2/1BQ2N2/PP3PPP/2R2RK1 w k - 0 18");
+
+            // If f3 is played, bot blunders knight (1098ms to move)
+            // board.LoadPosition("4k3/p3p2p/2npNppn/8/4P3/1B1b4/PP1N1PPP/2R3K1 w - - 8 28");
+
+            // If knight is moved for fried liver, it blunders
+            // board.LoadPosition("r4b1r/ppp1npp1/4kn1p/3pNp2/2PP1P2/N3P2P/PP4P1/1RB2RK1 w - - 2 16");
+
             // Player Setup
             PlayerWhite = CreatePlayer(whiteType);
             PlayerBlack = CreatePlayer(blackType);
             PlayerWhite.SubscribeToMoveChosenEventIfHuman(OnMoveChosen);
             PlayerBlack.SubscribeToMoveChosenEventIfHuman(OnMoveChosen);
 
-            // UI Setup
+            // UI Setup§
             boardUI.UpdatePosition(board);
             boardUI.ResetSquareColours();
             SetBoardPerspective();
@@ -163,6 +181,7 @@ namespace ChessChallenge.Application
 
         void NotifyTurnToMove()
         {
+            Console.WriteLine("Move "+board.AllGameMoves.Count+"]: " + FenUtility.CurrentFen(board));
             //playerToMove.NotifyTurnToMove(board);
             if (PlayerToMove.IsHuman)
             {
