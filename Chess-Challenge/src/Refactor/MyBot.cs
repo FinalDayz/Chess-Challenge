@@ -1,14 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChessChallenge.API;
 
+namespace Chess_Challenge.src.Refactor
+{
   public class MyBot : IChessBot
   {
 
     public static int POSITIONS_EVALUATED;
 
-    int calculateWhenToStop(ChessChallenge.API.Timer timer)
+    int calculateWhenToStop(Timer timer)
     {
       return 200 + timer.MillisecondsRemaining / 40;
     }
@@ -54,13 +56,13 @@ using ChessChallenge.API;
       whenToStop = calculateWhenToStop(timer);
       // whenToStop = 2500;
       // #if DEBUG
-    //  whenToStop = 99999999;
+     // whenToStop = 99999999;
       // #endif
 
       Console.WriteLine("whenToStop: " + whenToStop);
 
       // rootNode.negaMax(4, board, 0, float.MinValue, float.MaxValue);
-      for (int i = 1; i <= 9; i++)
+      for (int i = 1; i <= 6; i++)
       {
         Console.WriteLine("Calculating depth: " + i);
         rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue);
@@ -323,3 +325,4 @@ using ChessChallenge.API;
       }
     }
   }
+}
