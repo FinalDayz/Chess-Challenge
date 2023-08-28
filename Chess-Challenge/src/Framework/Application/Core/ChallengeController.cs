@@ -99,6 +99,11 @@ namespace ChessChallenge.Application
             int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
             board.LoadPosition(botMatchStartFens[fenIndex]);
 
+            // Has mate, but is only procastenating (black mate)
+            // board.LoadPosition("3r2n1/5r2/8/1K6/8/8/8/q1kq4 b - - 90 156");
+            // Has mate, but is only procastenating (white mate)
+            // board.LoadPosition("6k1/6P1/6KP/8/8/8/8/8 w - - 0 1");
+
             // board.LoadPosition("rn2kb1r/pp2p3/2ppBn2/5pBp/3P4/2NQP3/PqP2PPP/R3K2R w KQq - 0 12");
             // Same as above, but player can attack queen in 1 move
             // board.LoadPosition("rn1k1b1r/pp2p3/2ppBn2/5pBp/3P4/2NQP3/PqP2PPP/R4RK1 w - - 2 13");
@@ -114,6 +119,8 @@ namespace ChessChallenge.Application
 
             // If knight is moved for fried liver, it blunders
             // board.LoadPosition("r4b1r/ppp1npp1/4kn1p/3pNp2/2PP1P2/N3P2P/PP4P1/1RB2RK1 w - - 2 16");
+
+
 
             // Player Setup
             PlayerWhite = CreatePlayer(whiteType);

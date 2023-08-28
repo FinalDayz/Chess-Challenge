@@ -148,7 +148,6 @@ namespace Chess_Challenge.src.Refactor
           // POSITIONS_EVALUATED >= 148000
         )
         {
-          Console.WriteLine("Stopping!, over time moveScore ::: " + moveScore + " curMove: " + move.ToString());
 
           maxDepth = Math.Min(currentDepth + 1, maxDepth);
           didSkip = true;
@@ -315,7 +314,8 @@ namespace Chess_Challenge.src.Refactor
         }
 
         // 15 moves, 5 captured: 0,3
-        // score+= 0.01f * (board.IsWhiteToMove ? 1 : -1) * board.GetLegalMoves().Length + board.GetLegalMoves(true).Length * 3;
+        score+= 
+            0.001f * (board.IsWhiteToMove ? 1 : -1) * board.GetLegalMoves().Length;
         return score;
       }
 

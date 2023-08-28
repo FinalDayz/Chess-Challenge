@@ -286,7 +286,8 @@
 //             }
 
 //             // 15 moves, 5 captured: 0,3
-//             // score+= 0.01f * (board.IsWhiteToMove ? 1 : -1) * board.GetLegalMoves().Length + board.GetLegalMoves(true).Length * 3;
+//              //           score+= 
+//              // 0.001f * (board.IsWhiteToMove ? 1 : -1) * board.GetLegalMoves().Length;
 //             return score;
 //         }
 
