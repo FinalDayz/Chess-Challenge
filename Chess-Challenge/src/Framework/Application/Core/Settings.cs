@@ -13,7 +13,7 @@ namespace ChessChallenge.Application
         30 * 1000;
         public const int IncrementMilliseconds = 
         //0 * 1000;
-          250;
+          1500;
         public const float MinMoveDelay = 0;
         public static readonly bool RunBotsOnSeparateThread = true;
 

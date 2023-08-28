@@ -102,7 +102,7 @@ public class MyBot : IChessBot
   }
 
 
-  public struct Node
+  public class Node
   {
     public static float[] pieceValues = { 0f, 1.00f, 3.00f, 3.10f, 5.00f, 9.00f, 99f };
     public float moveScore = 0;
@@ -310,9 +310,18 @@ public class MyBot : IChessBot
             - pieces[pieceCounter + 5].Count * pieceValues[pieceCounter];
       }
 
-      // 15 moves, 5 captured: 0,3
-      score+= 
-          0.001f * player * board.GetLegalMoves().Length;
+      if(board.IsInCheck()) {
+        return score;
+      }
+
+      score += 0.001f * player * board.GetLegalMoves().Length;
+
+      if(board.TrySkipTurn()) {
+        score += 0.001f * -player * board.GetLegalMoves().Length;
+
+        board.UndoSkipTurn();
+      }
+
       return score;
     }
 

@@ -99,6 +99,9 @@ namespace ChessChallenge.Application
             int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
             board.LoadPosition(botMatchStartFens[fenIndex]);
 
+            // Blunders queen indirectly by attacking the opponent queen with knight
+            // board.LoadPosition("6k1/2rn1pp1/1p1bp2p/p3N3/Q2PqP2/8/1P3PBP/3R2K1 b - - 9 27");
+
             // Has mate, but is only procastenating (black mate)
             // board.LoadPosition("3r2n1/5r2/8/1K6/8/8/8/q1kq4 b - - 90 156");
             // Has mate, but is only procastenating (white mate)
