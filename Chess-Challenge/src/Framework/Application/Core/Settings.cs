@@ -9,11 +9,11 @@ namespace ChessChallenge.Application
         // Game settings
         public const int GameDurationMilliseconds = 
         // 99999999;
-        60 * 1000;
-        // 30 * 1000;
+        // 60 * 1000;
+        30 * 1000;
         public const int IncrementMilliseconds = 
-        0 * 1000;
-          // 150;
+        // 0 * 1000;
+          150;
         public const float MinMoveDelay = 0;
         public static readonly bool RunBotsOnSeparateThread = true;
 

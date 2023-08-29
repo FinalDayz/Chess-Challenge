@@ -25,7 +25,7 @@ public class MyBot : IChessBot
 
   //   if (prefMove != Move.NullMove) board.MakeMove(prefMove.GetValueOrDefault());
 
-  //   //Console.write(node.move.toSANString(board.board) + ", ");
+  //   //Console.Write(node.move.toSANString(board.board) + ", ");
   //   printNodeMoveRec(node.bestNode, board, node.move);
 
   //   if (prefMove != Move.NullMove) board.UndoMove(prefMove.GetValueOrDefault());
@@ -36,37 +36,37 @@ public class MyBot : IChessBot
 
     MyBot.timer = timer;
 
-    // //Console.writeLine("STATIC Evaluation (white): " + Node.EvaluatePosition(board, 0));
+    // //Console.WriteLine("STATIC Evaluation (white): " + Node.EvaluatePosition(board, 0));
 
     POSITIONS_EVALUATED = 0;
 
     PieceList[] pieces = board.GetAllPieceLists();
 
     Move bestMove = board.GetLegalMoves()[0];
-    //Console.writeLine("First move: " + bestMove);
+    //Console.WriteLine("First move: " + bestMove);
 
     LinkedList<Node> nodes = new LinkedList<Node>();
 
 
-    Node rootNode = new Node(Move.NullMove, board.IsWhiteToMove ? 1 : -1, board, "");
+    Node rootNode = new Node(Move.NullMove, board.IsWhiteToMove ? 1 : -1, board, "", null);
 
 
     // Bad move on whenToStop: 1000, depth: 9
 
     whenToStop = calculateWhenToStop(timer);
-    // whenToStop = 2500;
+    // whenToStop = 100;
     // #if DEBUG
     // whenToStop = 99999999;
     // #endif
 
-    //Console.writeLine("whenToStop: " + whenToStop);
+    //Console.WriteLine("whenToStop: " + whenToStop);
 
     // rootNode.negaMax(4, board, 0, float.MinValue, float.MaxValue);
     for (int i = 1; i <= 10; i++)
     {
-      //Console.writeLine("Calculating depth: " + i);
+      //Console.WriteLine("Calculating depth: " + i);
       rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue);
-      //Console.write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
+      //Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
 #if DEV
       // if (timer.MillisecondsElapsedThisTurn >= whenToStop)break;
 #else
@@ -74,13 +74,13 @@ public class MyBot : IChessBot
 #endif
     }
 
-    //Console.writeLine();
+    //Console.WriteLine();
 
     foreach (Node node in rootNode.childNodes)
     {
-      //Console.write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
+      //Console.Write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
       // printNodeMoveRec(node, board, null);
-      //Console.writeLine();
+      //Console.WriteLine();
     }
 
     bestMove = rootNode.bestMove;
@@ -92,13 +92,13 @@ public class MyBot : IChessBot
 
 
 
-    //Console.writeLine("Best move has score of: " + bestMoveScore);
-    //Console.write("Moves: ");
+    //Console.WriteLine("Best move has score of: " + bestMoveScore);
+    //Console.Write("Moves: ");
     // printNodeMoveRec(bestNode, board, null);
 
-    //Console.writeLine();
+    //Console.WriteLine();
 
-    //Console.writeLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, positions evaluated: " + POSITIONS_EVALUATED / 1000 + "k");
+    //Console.WriteLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, positions evaluated: " + POSITIONS_EVALUATED / 1000 + "k");
 
 
     return bestMove;
@@ -120,28 +120,32 @@ public class MyBot : IChessBot
     public readonly string moveStr = "";
     public readonly string movesStr;
     public bool onlyCapturesChilds = false;
+    public Node parent;
+    private Boolean ABCutOff = false;
 
 
-    public Node(Move move, int player, Board board, string allMovesStr)
+    public Node(Move move, int player, Board board, string allMovesStr, Node parent)
     {
       childNodes = new List<Node>();
-
+      this.parent = parent;
       this.move = move;
       this.player = player;
-      #if DEV
-            moveStr = move.toSANString(board.board);
-            movesStr = allMovesStr + (moveStr.Equals("Null") ? "" : moveStr + " ");
-      #else
+#if DEV
+      moveStr = move.toSANString(board.board);
+      movesStr = allMovesStr + (moveStr.Equals("Null") ? "" : moveStr + " ");
+#else
             moveStr = "";
             movesStr = "";
-      #endif
+#endif
     }
 
     // [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public void negaMax(int maxDepth, Board board, int currentDepth, float alpha, float beta)
     {
 
-      if (movesStr.Equals("Bxb2 Re8+ "))
+      if (movesStr.Equals("Qxf5 ")
+        && POSITIONS_EVALUATED >= 17000
+       )
       {
 
       }
@@ -155,29 +159,31 @@ public class MyBot : IChessBot
       }
       if (currentDepth <= 3 &&
 #if DEV
-      POSITIONS_EVALUATED >= 148000
-     // MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
+      // POSITIONS_EVALUATED >= 17000
+      MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
 #else
           MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
 #endif
 
      )
       {
-
-        maxDepth = Math.Min(currentDepth + 1, maxDepth);
-        didSkip = true;
-        return;
+        if (!ABCutOff)
+        {
+          // maxDepth = Math.Min(currentDepth + 1, maxDepth);
+          didSkip = true;
+          return;
+        }
       }
 
 
-      moveScore = float.MinValue;
+      moveScore = /*onlyDoCaptures ? EvaluatePosition(board, currentDepth) * player : */float.MinValue;
 
       if (childNodes.Count == 0)
       {
         Span<Move> moves = stackalloc Move[256];
         board.GetLegalMovesNonAlloc(ref moves);
 
-        // //Console.writeLine(moves.Length);
+        // //Console.WriteLine(moves.Length);
         // childNodes = new ArrayList<Move>();
 
         // for (int index = 0; index < moves.Length; index++)
@@ -187,7 +193,7 @@ public class MyBot : IChessBot
         String movesStr = this.movesStr;
         int player = this.player;
         childNodes = new List<Move>(board.GetLegalMoves(onlyDoCaptures))// && !board.IsInCheck()))
-            .ConvertAll(move => new Node(move, -player, board, movesStr));
+            .ConvertAll(move => new Node(move, -player, board, movesStr, this));
 
         if (onlyDoCaptures && childNodes.Count == 0)
         {
@@ -203,17 +209,16 @@ public class MyBot : IChessBot
         childNodes.AddRange(
           new List<Move>(board.GetLegalMoves())
             .Where(move => !move.IsCapture)
-            .Select(move => new Node(move, -player, board, movesStr))
+            .Select(move => new Node(move, -player, board, movesStr, this))
         );
       }
       onlyCapturesChilds = onlyDoCaptures;// && !board.IsInCheck();
 
-      // //Console.writeLine("sorting in depth " + currentDepth);
+      // //Console.WriteLine("sorting in depth " + currentDepth);
       sortMoves(childNodes, board);
 
       foreach (Node node in childNodes)
       {
-
         board.MakeMove(node.move);
         node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha);
         localPositionsEvaluated += node.localPositionsEvaluated;
@@ -232,8 +237,15 @@ public class MyBot : IChessBot
         alpha = Math.Max(alpha, moveScore);
         if (alpha >= beta)
         {
+          ABCutOff = true;
           return;
         }
+        ABCutOff = false;
+      }
+
+      if (movesStr.Equals("Rc4 "))
+      {
+
       }
     }
 
@@ -259,27 +271,27 @@ public class MyBot : IChessBot
             // }
 
             // if(same) {
-            //     //Console.writeLine("Same!!");
+            //     //Console.WriteLine("Same!!");
 
             // } else {
-            //     //Console.writeLine("Not same...");
-            //     //Console.write("Nodes: ");
+            //     //Console.WriteLine("Not same...");
+            //     //Console.Write("Nodes: ");
             //     for(int i = 0; i < nodes.Count; i++) {
-            //         //Console.write(nodes[i].move.ToString()+", ");
+            //         //Console.Write(nodes[i].move.ToString()+", ");
             //     }
-            //     //Console.writeLine("");
-            //     //Console.write("Temp : ");
+            //     //Console.WriteLine("");
+            //     //Console.Write("Temp : ");
             //     for(int i = 0; i < tmp.Count; i++) {
-            //         //Console.write(tmp[i].move.ToString()+", ");
+            //         //Console.Write(tmp[i].move.ToString()+", ");
             //     }
-            //     //Console.writeLine();
+            //     //Console.WriteLine();
             // }
       */
     }
 
     public float getBestGuessScore(Board board)
     {
-      // //Console.writeLine("Guessing move " + move.toSANString(board.board));
+      // //Console.WriteLine("Guessing move " + move.toSANString(board.board));
 
       if (childNodes.Count != 0)
         return moveScore;
