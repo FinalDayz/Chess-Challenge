@@ -99,6 +99,9 @@ namespace ChessChallenge.Application
             int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
             board.LoadPosition(botMatchStartFens[fenIndex]);
 
+            // Taking bishop and rook is actually causing checkmate
+            board.LoadPosition("7k/rb3p1p/pppb1Np1/3pB1P1/P7/1P1P1P2/1RPRnPK1/8 b - - 0 1");
+
             // Blunders queen indirectly by attacking the opponent queen with knight
             // board.LoadPosition("6k1/2rn1pp1/1p1bp2p/p3N3/Q2PqP2/8/1P3PBP/3R2K1 b - - 9 27");
 
