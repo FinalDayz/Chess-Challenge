@@ -74,8 +74,8 @@ namespace ChessChallenge.Application
       botMatchStartFens = FileHelper.ReadResourceFile("Fens.txt").Split('\n').Where(fen => fen.Length > 0).ToArray();
       botTaskWaitHandle = new AutoResetEvent(false);
 
-      // StartNewGame(PlayerType.Human, PlayerType.MyBot); // Player as white
-      StartNewGame(PlayerType.MyBot, PlayerType.Human); // Player as black
+      StartNewGame(PlayerType.Human, PlayerType.MyBot); // Player as white
+      // StartNewGame(PlayerType.MyBot, PlayerType.Human); // Player as black
     }
 
     public void StartNewGame(PlayerType whiteType, PlayerType blackType)
@@ -99,6 +99,9 @@ namespace ChessChallenge.Application
       bool isGameWithHuman = whiteType is PlayerType.Human || blackType is PlayerType.Human;
       int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
       board.LoadPosition(botMatchStartFens[fenIndex]);
+
+      // MAKES ILLIGAL MOVE
+      board.LoadPosition("r2q1rk1/pb2bppp/3p4/p1pPn3/1nP2P2/2N1B3/1P2N1PP/RB1Q1RK1 b - - 0 16");
 
 
       // BLunders rook
