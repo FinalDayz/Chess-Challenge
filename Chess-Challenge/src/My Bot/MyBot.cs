@@ -54,7 +54,8 @@ public class MyBot : IChessBot
     // Bad move on whenToStop: 1000, depth: 9
 
     whenToStop = calculateWhenToStop(timer);
-    // whenToStop = 100;
+    Random rnd = new Random();
+    whenToStop = rnd.Next(200, 1900);
     // #if DEBUG
     // whenToStop = 99999999;
     // #endif
@@ -65,12 +66,12 @@ public class MyBot : IChessBot
     for (int i = 1; i <= 10; i++)
     {
       //Console.WriteLine("Calculating depth: " + i);
-      rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue);
+      rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue, false);
       //Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
 #if DEV
       // if (timer.MillisecondsElapsedThisTurn >= whenToStop)break;
 #else
-        if (timer.MillisecondsElapsedThisTurn >= whenToStop)break;
+      if (timer.MillisecondsElapsedThisTurn >= whenToStop) break;
 #endif
     }
 
@@ -134,16 +135,17 @@ public class MyBot : IChessBot
       moveStr = move.toSANString(board.board);
       movesStr = allMovesStr + (moveStr.Equals("Null") ? "" : moveStr + " ");
 #else
-            moveStr = "";
-            movesStr = "";
+      moveStr = "";
+      movesStr = "";
 #endif
     }
+    // forceNotSkip = forceNotSkip || 
 
     // [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public void negaMax(int maxDepth, Board board, int currentDepth, float alpha, float beta)
+    public void negaMax(int maxDepth, Board board, int currentDepth, float alpha, float beta, Boolean forceNotSkip)
     {
 
-      if (movesStr.Equals("Qxf5 ")
+      if (movesStr.Equals("Re4 ") && currentDepth == 1
         && POSITIONS_EVALUATED >= 17000
        )
       {
@@ -159,15 +161,15 @@ public class MyBot : IChessBot
       }
       if (currentDepth <= 3 &&
 #if DEV
-      // POSITIONS_EVALUATED >= 17000
-      MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
+      POSITIONS_EVALUATED >= 49000
+      // MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
 #else
           MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
 #endif
 
      )
       {
-        if (!ABCutOff)
+        if (!((ABCutOff && moveScore < beta) || forceNotSkip))
         {
           // maxDepth = Math.Min(currentDepth + 1, maxDepth);
           didSkip = true;
@@ -220,9 +222,13 @@ public class MyBot : IChessBot
       foreach (Node node in childNodes)
       {
         board.MakeMove(node.move);
-        node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha);
+        node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha, ((ABCutOff && moveScore < beta) || forceNotSkip));
         localPositionsEvaluated += node.localPositionsEvaluated;
         board.UndoMove(node.move);
+
+        if (moveStr.Equals("Re4") && currentDepth == 1 && POSITIONS_EVALUATED >= 17000)  {   
+          
+        }
 
         if (-node.moveScore > moveScore || bestMove.IsNull)
         {

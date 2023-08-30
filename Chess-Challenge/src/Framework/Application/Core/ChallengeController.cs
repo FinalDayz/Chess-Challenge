@@ -101,6 +101,8 @@ namespace ChessChallenge.Application
       board.LoadPosition(botMatchStartFens[fenIndex]);
 
 
+      // BLunders rook
+      // board.LoadPosition("8/p2k3p/4p2p/Nr1pR3/6P1/P5KP/8/8 w - - 1 33");
 
       // Blunders the queen in 1 move...
       // board.LoadPosition("r6r/pp1k2b1/2ppp1p1/3n1pp1/PP1P2bP/2PQ2PB/4PP2/2R1K2R w - - 0 21");
