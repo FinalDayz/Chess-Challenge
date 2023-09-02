@@ -51,5 +51,9 @@ namespace ChessChallenge.API
         {
             return $"Game start time: {GameStartTimeMilliseconds} ms. Turn elapsed time: {MillisecondsElapsedThisTurn} ms. My time remaining: {MillisecondsRemaining} Opponent time remaining: {OpponentMillisecondsRemaining} ms.";
         }
+
+    public static implicit operator Timer(System.Threading.Timer v) {
+      throw new NotImplementedException();
     }
+  }
 }

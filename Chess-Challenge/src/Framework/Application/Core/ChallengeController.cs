@@ -80,7 +80,7 @@ namespace ChessChallenge.Application
 
     public void StartNewGame(PlayerType whiteType, PlayerType blackType)
     {
-      moveHistory = "";
+
       // End any ongoing game
       EndGame(GameResult.DrawByArbiter, log: false, autoStartNextBotMatch: false);
       gameID = rng.Next();
@@ -100,9 +100,22 @@ namespace ChessChallenge.Application
       int fenIndex = isGameWithHuman ? 0 : botMatchGameIndex / 2;
       board.LoadPosition(botMatchStartFens[fenIndex]);
 
-      // MAKES ILLIGAL MOVE
-      board.LoadPosition("r2q1rk1/pb2bppp/3p4/p1pPn3/1nP2P2/2N1B3/1P2N1PP/RB1Q1RK1 b - - 0 16");
+      moveHistory = "[Setup \"1\"]\n" +
+        "[FEN \"" + board.GameStartFen + "\"]\n";
 
+      // board.LoadPosition("r1b1kbnr/pp2pppp/2n1q3/2pp4/2B2Q2/4P3/PPPP1PPP/RNB1K1NR w KQkq d6 0 6");
+
+        // Blunders pawn (white)
+      // board.LoadPosition("r1b4r/1pp1kpp1/2np1n2/p1b1p3/P1B1P2p/2P2P1P/1P1P1P2/RNB1K1NR w - - 0 12");
+
+      // White can win queen
+      // board.LoadPosition("5k2/4ppp1/1nq4p/Qp6/1p6/4P3/5PPP/3R3K w - - 0 1");
+
+      // White has M1#
+      // board.LoadPosition("5k2/1q2ppp1/1n5p/Q7/1p4n1/4P3/5PPP/3R3K w - - 0 1");
+
+      // Hangs rook (black)
+      // board.LoadPosition("1r2r1k1/p2b1ppp/1pn5/3p4/1b1P1B2/3B1N2/PP3PPP/2R2R1K b - - 5 18"); 
 
       // BLunders rook
       // board.LoadPosition("8/p2k3p/4p2p/Nr1pR3/6P1/P5KP/8/8 w - - 1 33");
