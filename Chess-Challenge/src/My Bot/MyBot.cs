@@ -1,11 +1,11 @@
-﻿# define CODE_FOR_TEST
-# define CODE_FOR_DEV
+﻿// # define CODE_FOR_TEST
+// # define CODE_FOR_DEV
 // # define CODE_FOR_DEBUG
 
 /*
 REMOVE LOGS::
   (Debug|Console)\.Write
-  \/\/$1.Write
+  //$1.Write
 
 BRING BACK LOGS
   //(Debug|Console)\.Write
@@ -20,28 +20,28 @@ using ChessChallenge.API;
 
 public class MyBot : IChessBot {
 
-  public static int POSITIONS_EVALUATED;
-  public static int POSITIONS_EVALUATED_BEFORE_TIMEOUT;
+  public static int TIMEOUT_CHECKS;
+  public static int TIMEOUT_CHECKS_BEFORE_TIMEOUT;
 
   public static Timer timer;
   public static int whenToStop;
-  public static int MAX_POSITIONS_EVALUATED = 9999999;
+  public static int MAX_TIMEOUT_CHECKS = 9999999;
 
 #if CODE_FOR_TEST
 
   public static MyBot INSTANCE;
   public MyBot() {
     INSTANCE = this;
-    POSITIONS_EVALUATED = 0;
-    POSITIONS_EVALUATED_BEFORE_TIMEOUT = 999999999;
-    MAX_POSITIONS_EVALUATED = 9999999;
+    TIMEOUT_CHECKS = 0;
+    TIMEOUT_CHECKS_BEFORE_TIMEOUT = 999999999;
+    MAX_TIMEOUT_CHECKS = 9999999;
     whenToStop = 0;
   }
 
 #endif
 
   protected int calculateWhenToStop(ChessChallenge.API.Timer timer) {
-    return 200 + timer.MillisecondsRemaining / 40;
+    return 200 + timer.MillisecondsRemaining / 36;
   }
 
   void printNodeMoveRec(Node node, Board board, Move? prefMove) {
@@ -49,52 +49,51 @@ public class MyBot : IChessBot {
 
     if (prefMove != Move.NullMove) board.MakeMove(prefMove.GetValueOrDefault());
 
-    Console.Write(node.move.toSANString(board.board) + ", ");
+    //Console.Write(node.move.toSANString(board.board) + ", ");
     printNodeMoveRec(node._bestNode, board, node.move);
 
     if (prefMove != Move.NullMove) board.UndoMove(prefMove.GetValueOrDefault());
   }
 
   public Move Think(Board board, Timer timer) {
-
     MyBot.timer = timer;
-    POSITIONS_EVALUATED = 0;
+    TIMEOUT_CHECKS = 0;
     Node rootNode = new Node(Move.NullMove, board.IsWhiteToMove ? 1 : -1, board, "", null);
 
     whenToStop = calculateWhenToStop(timer);
 #if CODE_FOR_DEBUG
     Random rnd = new Random();
-    // whenToStop = rnd.Next(300, 2000);
-    // MAX_POSITIONS_EVALUATED = rnd.Next(1000, 25000);
-    // MAX_POSITIONS_EVALUATED = 7618;
+    whenToStop = rnd.Next(500, 1300);
+    // MAX_TIMEOUT_CHECKS = rnd.Next(107800, 107825);
+    // MAX_TIMEOUT_CHECKS = 228029;
     // whenToStop = 99999;
 
-    if (MAX_POSITIONS_EVALUATED != 0) {
+    if (MAX_TIMEOUT_CHECKS != 0 && MAX_TIMEOUT_CHECKS != 9999999) {
       whenToStop = 10 * 60 * 1000;
     } else {
-      MAX_POSITIONS_EVALUATED = 9999999;
+      MAX_TIMEOUT_CHECKS = 9999999;
     }
 #endif
+
     // whenToStop = 99999999;
 
-    Console.WriteLine("whenToStop: " + whenToStop + " (MAX_POSITIONS_EVALUATED: " + MAX_POSITIONS_EVALUATED + ")");
+    //Console.WriteLine("whenToStop: " + whenToStop + " (MAX_TIMEOUT_CHECKS: " + MAX_TIMEOUT_CHECKS + ")");
 
     // rootNode.negaMax(4, board, 0, float.MinValue, float.MaxValue);
     for (int i = 1; i <= 12; i++) {
-      Console.WriteLine("Calculating depth: " + i);
+      //Console.WriteLine("Calculating depth: " + i + " left: " + (MAX_TIMEOUT_CHECKS - TIMEOUT_CHECKS));
       rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue, true);
-      Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
+      //Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
 #if CODE_FOR_DEBUG
-      if (timer.MillisecondsElapsedThisTurn >= whenToStop
-       || POSITIONS_EVALUATED >= MAX_POSITIONS_EVALUATED)
+      if (timer.MillisecondsElapsedThisTurn * 1.3 >= whenToStop
+       || TIMEOUT_CHECKS * 1.3 >= MAX_TIMEOUT_CHECKS)
 #else
-      if (timer.MillisecondsElapsedThisTurn >= whenToStop)
+      if (timer.MillisecondsElapsedThisTurn * 1.3 >= whenToStop)
 #endif
       {
-        // If the best node is not fuly calculated due to time, make sure to calculate it and define a new best node
-        if (rootNode._bestNode.didSkip) {
-          Console.WriteLine("Ah oh, the code shouldnt be here :(");
-        }
+        // if (rootNode.didSkip) {
+        //   rootNode.negaMax(i - 1, board, 0, float.MinValue, float.MaxValue, true);
+        // }
         break;
       }
       if (rootNode.moveScore > 99990000) {
@@ -103,25 +102,24 @@ public class MyBot : IChessBot {
     }
 
 
-    Console.WriteLine();
+    //Console.WriteLine();
 
     foreach (Node node in rootNode.childNodes) {
-      Debug.Write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
+      //Debug.Write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
       // printNodeMoveRec(node, board, null);
-      Debug.WriteLine("");
+      //Debug.WriteLine("");
     }
 
     Move bestMove = rootNode.bestMove;
     float bestMoveScore = rootNode.moveScore;
 
-    Console.WriteLine("Best move has score of: " + bestMoveScore);
-    Console.Write("Moves: ");
+    //Console.WriteLine("Best move has score of: " + bestMoveScore);
+    //Console.Write("Moves: ");
     printNodeMoveRec(rootNode._bestNode, board, null);
 
-    Console.WriteLine();
+    //Console.WriteLine();
 
-    Console.WriteLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, positions evaluated: " + POSITIONS_EVALUATED / 1000 + "k (" + POSITIONS_EVALUATED + ")");
-
+    //Console.WriteLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, Timeout checks: " + TIMEOUT_CHECKS / 1000 + "k (" + TIMEOUT_CHECKS_BEFORE_TIMEOUT + ")");
 
     return bestMove;
   }
@@ -173,6 +171,7 @@ public class MyBot : IChessBot {
 
     // [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public void negaMax(int maxDepth, Board board, int currentDepth, float alpha, float beta, bool allowTimeout) {
+
       didSkip = false;
       var onlyDoCaptures = currentDepth >= maxDepth && move.IsCapture && currentDepth < maxDepth * 2;
 
@@ -181,8 +180,7 @@ public class MyBot : IChessBot {
         return;
       }
 
-      moveScore = /*onlyDoCaptures ? EvaluatePosition(board, currentDepth) * player : */
-            onlyDoCaptures ? EvaluatePosition(board, currentDepth) * player : float.MinValue;
+      moveScore = float.MinValue;
       if (onlyDoCaptures) {
         moveScore = EvaluatePosition(board, currentDepth) * player;
         if (moveScore >= beta) return;
@@ -215,39 +213,49 @@ public class MyBot : IChessBot {
       }
       onlyCapturesChilds = onlyDoCaptures;// && !board.IsInCheck();
 
-      sortMoves(childNodes, board);
-
-      if (parent == null && currentDepth == 0 && maxDepth == 6) {
+      if (parent == null && currentDepth == 0 && maxDepth == 5) {
 
       }
 
+      sortMoves(childNodes, board);
+
+
+
+      int index = 0;
       foreach (Node node in childNodes) {
+
         if (allowTimeout && (
 #if CODE_FOR_TEST
-        MyBot.INSTANCE.shouldStop() ||
+        INSTANCE.shouldStop() ||
 #endif
 #if CODE_FOR_DEBUG
-        POSITIONS_EVALUATED >= MAX_POSITIONS_EVALUATED ||
-        MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
+        TIMEOUT_CHECKS >= MAX_TIMEOUT_CHECKS ||
+        timer.MillisecondsElapsedThisTurn >= whenToStop
 #else
-            MyBot.timer.MillisecondsElapsedThisTurn >= MyBot.whenToStop
+            timer.MillisecondsElapsedThisTurn >= whenToStop
 #endif
         )) {
-          POSITIONS_EVALUATED_BEFORE_TIMEOUT = Math.Min(POSITIONS_EVALUATED_BEFORE_TIMEOUT, POSITIONS_EVALUATED - 1);
+          TIMEOUT_CHECKS_BEFORE_TIMEOUT = Math.Min(TIMEOUT_CHECKS_BEFORE_TIMEOUT, TIMEOUT_CHECKS - 1);
           // moveScore = -99999;
           didSkip = true;
           return;
         }
+        TIMEOUT_CHECKS++;
 
         board.MakeMove(node.move);
         node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha, allowTimeout);
         localPositionsEvaluated += node.localPositionsEvaluated;
 
-        // // Special case where the best move is the node that ran out of time
-        if (parent == null && node.didSkip && (-node.moveScore > moveScore)) {
-          Console.WriteLine("Special case for move " + node.ToString() + " TIME:" + MyBot.timer.MillisecondsElapsedThisTurn);
+        if (parent == null && (TIMEOUT_CHECKS >= MAX_TIMEOUT_CHECKS ||
+                timer.MillisecondsElapsedThisTurn >= whenToStop)) {
+        }
+
+        // Special case where the best move is the node that ran out of time
+        if (parent == null && node.didSkip && (-node.moveScore > moveScore) && moveScore != float.MinValue) {
+
+          //Console.WriteLine("Special case for move " + node.ToString() + " TIME:" + timer.MillisecondsElapsedThisTurn);
           node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha, false);
-          Console.WriteLine("Done with special case TIME:" + MyBot.timer.MillisecondsElapsedThisTurn + " Is best move now? " + (-node.moveScore > moveScore));
+          //Console.WriteLine("Done with special case TIME:" + timer.MillisecondsElapsedThisTurn + " Is best move now? " + (-node.moveScore > moveScore));
         }
 
         board.UndoMove(node.move);
@@ -264,10 +272,13 @@ public class MyBot : IChessBot {
         alpha = Math.Max(alpha, moveScore);
         if (alpha >= beta) {
           aBCutOff = true;
+          didSkip = didSkip || _bestNode.didSkip;
           return;
         }
         aBCutOff = false;
+        index++;
       }
+
     }
 
     static void sortMoves(List<Node> nodes, Board board) {
@@ -291,45 +302,40 @@ public class MyBot : IChessBot {
             // }
 
             // if(same) {
-            //     Console.WriteLine("Same!!");
+            //     //Console.WriteLine("Same!!");
 
             // } else {
-            //     Console.WriteLine("Not same...");
-            //     Console.Write("Nodes: ");
+            //     //Console.WriteLine("Not same...");
+            //     //Console.Write("Nodes: ");
             //     for(int i = 0; i < nodes.Count; i++) {
-            //         Console.Write(nodes[i].move.ToString()+", ");
+            //         //Console.Write(nodes[i].move.ToString()+", ");
             //     }
-            //     Console.WriteLine("");
-            //     Console.Write("Temp : ");
+            //     //Console.WriteLine("");
+            //     //Console.Write("Temp : ");
             //     for(int i = 0; i < tmp.Count; i++) {
-            //         Console.Write(tmp[i].move.ToString()+", ");
+            //         //Console.Write(tmp[i].move.ToString()+", ");
             //     }
-            //     Console.WriteLine();
+            //     //Console.WriteLine();
             // }
       */
     }
 
     public float getBestGuessScore(Board board) {
-      // Console.WriteLine("Guessing move " + move.toSANString(board.board));
-
       if (childNodes.Count != 0)
         return moveScore;
 
 
-      if (!move.IsCapture)
-        return 1;
+      if (move.IsCapture) {
+        return move.MovePieceType - move.CapturePieceType;
+      }
 
-      return 0;
+      if (move.IsPromotion) {
+        return 20;
+      }
 
-      //   float pieceValue = pieceValues[(int)move.MovePieceType];
-      //   float capturePieceValue = pieceValues[(int)move.MovePieceType];
-
-      //   float score = 10 * (capturePieceValue - pieceValue);
-      //   BitboardHelper.GetPawnAttacks(move.TargetSquare, player == 1);
-      //   score -= 20 * (board.SquareIsAttackedByOpponent(move.TargetSquare) ? 1 : 0);
-
-      //   return score;
+      return 5;
     }
+
     /*
         static int[] pieceVal = {0, 100, 310, 330, 500, 1000, 10000 };
         static int[] piecePhase = {0, 0, 1, 1, 2, 4, 0};
@@ -362,7 +368,7 @@ public class MyBot : IChessBot {
         }
     */
     public float EvaluatePosition(Board board, int depth) {
-      POSITIONS_EVALUATED++;
+      // TIMEOUT_CHECKS++;
       localPositionsEvaluated++;
       // return Evaluate(board);
       int player = board.IsWhiteToMove ? 1 : -1;

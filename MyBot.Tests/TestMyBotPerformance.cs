@@ -11,6 +11,22 @@ public class UnitTest1 {
     _output = output;
   }
 
+  [Theory(DisplayName = "Has to move or defend the knight")]
+  [InlineData(2000)]
+  [InlineData(1000)]
+  [InlineData(750)]
+  [InlineData(500)]
+  [InlineData(250)]
+  [InlineData(100)]
+  public void Test_dont_knight(int maxTimeToTake) {
+    Console.Out.WriteLine("============");
+    PositionTester
+    .testPosition("r1b1kbnr/pp1ppppp/2n3q1/2Q5/4N3/4P3/PPPP1PPP/R1B1KBNR w KQkq - 1 6")
+    .setOnlyGoodMoves(new String[] { "Qd5", "Ng3", "d3", "Bd3", "f3", "Nc3", "Qc4" })
+    .setMaxTimeToTake(maxTimeToTake)
+    .test();
+  }
+
   [Theory(DisplayName = "Queen can be blundered, but hxg4 also blunders a bishop")]
   [InlineData(2000)]
   [InlineData(1000)]
@@ -40,7 +56,7 @@ public class UnitTest1 {
     Console.Out.WriteLine("============");
     PositionTester
     .testPosition("7k/rb3p1p/pppb1Np1/3pB1P1/P7/1P1P1P2/1RPRnPK1/8 b - - 0 1")
-    .setOnlyGoodMoves(new String[] { "Nf4+"})
+    .setOnlyGoodMoves(new String[] { "Nf4+" })
     .setMaxTimeToTake(maxTimeToTake)
     .setMaxEvaluations(evaluations)
     .test();
@@ -56,13 +72,29 @@ public class UnitTest1 {
   public void Test_dont_blunde_queen(int maxTimeToTake) {
     Console.Out.WriteLine("============");
     PositionTester
-    .testPosition("7k/rb3p1p/pppb1Np1/3pB1P1/P7/1P1P1P2/1RPRnPK1/8 b - - 0 1")
-    .setOnlyGoodMoves(new String[] { "Nxe4", "Qd7", "Qc8", "Qg4", "Qh5"})
+    .testPosition("1r3rk1/p3ppbp/b2p1np1/2pP1q2/2P1P3/BP3NP1/2KN1PBP/7R b - e3 0 17")
+    .setOnlyGoodMoves(new String[] { "Nxe4", "Qd7", "Qc8", "Qg4", "Qh5" })
     .setMaxTimeToTake(maxTimeToTake)
     .test();
   }
 
-  //1r3rk1/p3ppbp/b2p1np1/2pP1q2/2P1P3/BP3NP1/2KN1PBP/7R b - e3 0 17
+  [Theory(DisplayName = "Has to move the queen")]
+  [InlineData(2000)]
+  [InlineData(1000)]
+  [InlineData(750)]
+  [InlineData(500)]
+  [InlineData(250)]
+  [InlineData(100)]
+  public void Test_dont_blunde_quee_2(int maxTimeToTake) {
+    Console.Out.WriteLine("============");
+    PositionTester
+    .testPosition("r3k2r/p1q1np1p/np2p1p1/2ppP1NQ/3P4/P1P1B3/2P2PPP/R3K2R w KQkq - 0 12")
+    .setOnlyGoodMoves(new String[] { "Qf3", "Qd1", "Qe2", "Qh3", "Qg4", "Qh4", "Qh6" })
+    .setMaxTimeToTake(maxTimeToTake)
+    .test();
+  }
+  //
+  //
 
   class PositionTester {
     public string fen;
@@ -148,7 +180,7 @@ public class UnitTest1 {
     public ChessChallenge.API.Move Think(ChessChallenge.API.Board board, ChessChallenge.API.Timer timer) {
 
       MyBot.timer = timer;
-      POSITIONS_EVALUATED = 0;
+      TIMEOUT_CHECKS = 0;
 
       Node rootNode = new Node(ChessChallenge.API.Move.NullMove, board.IsWhiteToMove ? 1 : -1, board, "", null);
 
@@ -158,7 +190,7 @@ public class UnitTest1 {
       } else if (maxDepth != 0) {
         whenToStop = 10 * 60 * 1000;
       } else if (maxEvaluations != 0) {
-        MAX_POSITIONS_EVALUATED = maxEvaluations;
+        MAX_TIMEOUT_CHECKS = maxEvaluations;
         whenToStop = 10 * 60 * 1000;
         maxDepth = 99;
       } else {
@@ -166,17 +198,22 @@ public class UnitTest1 {
         whenToStop = calculateWhenToStop(timer);
       }
 
-      Console.WriteLine("whenToStop: " + whenToStop + " (MAX_POSITIONS_EVALUATED: " + MAX_POSITIONS_EVALUATED + ")");
+      Console.WriteLine("whenToStop: " + whenToStop + " (MAX_POSITIONS_EVALUATED: " + MAX_TIMEOUT_CHECKS + ")");
 
       for (int i = 1; i <= maxDepth; i++) {
         Console.WriteLine("Calculating depth: " + i);
         rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue, false);
 
-        if (timer.MillisecondsElapsedThisTurn >= whenToStop) break;
+        if (timer.MillisecondsElapsedThisTurn * 1.3 >= whenToStop) break;
         if (shouldStop()) break;
+
+        if (rootNode.moveScore > 99990000) {
+          break;
+        }
       }
 
-      Console.WriteLine("POSITIONS_EVALUATED_BEFORE_TIMEOUT: " + POSITIONS_EVALUATED_BEFORE_TIMEOUT + " (" + POSITIONS_EVALUATED + ")");
+      Console.WriteLine("POSITIONS_EVALUATED_BEFORE_TIMEOUT: " + TIMEOUT_CHECKS_BEFORE_TIMEOUT + " (" + TIMEOUT_CHECKS + ")");
+      Console.WriteLine("That took: " + timer.MillisecondsElapsedThisTurn + " ms");
 
       return rootNode.bestMove;
     }
@@ -186,7 +223,7 @@ public class UnitTest1 {
     }
 
     override public bool shouldStop() {
-      return POSITIONS_EVALUATED >= MAX_POSITIONS_EVALUATED;
+      return TIMEOUT_CHECKS >= MAX_TIMEOUT_CHECKS;
     }
   }
 }
