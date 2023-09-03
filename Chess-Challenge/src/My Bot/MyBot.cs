@@ -63,11 +63,10 @@ public class MyBot : IChessBot {
     whenToStop = calculateWhenToStop(timer);
 #if CODE_FOR_DEBUG
     Random rnd = new Random();
-    // whenToStop = rnd.Next(500, 1300);
+    whenToStop = rnd.Next(500, 1300);
     // MAX_TIMEOUT_CHECKS = rnd.Next(124890, 124920);
-    MAX_TIMEOUT_CHECKS = 127928;
+    MAX_TIMEOUT_CHECKS = 32530;
     // whenToStop = 1186;
-    //That took 1186ms, Timeout checks: 125k (125966)
 
     if (MAX_TIMEOUT_CHECKS != 0 && MAX_TIMEOUT_CHECKS != 9999999) {
       whenToStop = 10 * 60 * 1000;
@@ -214,14 +213,12 @@ public class MyBot : IChessBot {
       }
       onlyCapturesChilds = onlyDoCaptures;// && !board.IsInCheck();
 
-      if (parent == null && currentDepth == 0 && maxDepth == 6) {
+      if (parent == null && currentDepth == 0 && maxDepth == 4) {
 
       }
 
       sortMoves(childNodes, board);
 
-      if (_bestNode != null)
-        childNodes.Insert(0, _bestNode);
       int index = 0;
       foreach (Node node in childNodes) {
 
@@ -322,10 +319,11 @@ public class MyBot : IChessBot {
     }
 
     public float getBestGuessScore(Board board) {
+      if(parent?._bestNode == this)
+        return -99;
+
       if (childNodes.Count != 0)
         return moveScore;
-
-
 
       if (move.IsCapture) {
         return move.MovePieceType - move.CapturePieceType;

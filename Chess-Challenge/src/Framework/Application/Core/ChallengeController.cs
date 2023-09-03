@@ -97,8 +97,11 @@ namespace ChessChallenge.Application {
       moveHistory = "[Setup \"1\"]\n" +
         "[FEN \"" + board.GameStartFen + "\"]\n";
 
+      // Doesnt capture bishop back
+      board.LoadPosition("r2q1rk1/p3nppp/Bp2pn2/8/3b3P/P1N1QbP1/1BP2P2/R4RK1 w - - 0 16");
+
       // Blunders queen
-      board.LoadPosition("r1bqk2r/ppp2ppp/2nb1n2/1B1Np2Q/8/4P3/PPPP1PPP/R1B1K1NR w KQkq - 1 6");
+      // board.LoadPosition("r1bqk2r/ppp2ppp/2nb1n2/1B1Np2Q/8/4P3/PPPP1PPP/R1B1K1NR w KQkq - 1 6");
 
 
       // Move or defend knight
