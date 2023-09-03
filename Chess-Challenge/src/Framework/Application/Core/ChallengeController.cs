@@ -70,8 +70,8 @@ namespace ChessChallenge.Application {
       botMatchStartFens = FileHelper.ReadResourceFile("Fens.txt").Split('\n').Where(fen => fen.Length > 0).ToArray();
       botTaskWaitHandle = new AutoResetEvent(false);
 
-      StartNewGame(PlayerType.Human, PlayerType.MyBot); // Player as white
-      // StartNewGame(PlayerType.MyBot, PlayerType.Human); // Player as black
+      // StartNewGame(PlayerType.Human, PlayerType.MyBot); // Player as white
+      StartNewGame(PlayerType.MyBot, PlayerType.Human); // Player as black
     }
 
     public void StartNewGame(PlayerType whiteType, PlayerType blackType) {
@@ -96,6 +96,10 @@ namespace ChessChallenge.Application {
 
       moveHistory = "[Setup \"1\"]\n" +
         "[FEN \"" + board.GameStartFen + "\"]\n";
+
+      // Blunders queen
+      board.LoadPosition("r1bqk2r/ppp2ppp/2nb1n2/1B1Np2Q/8/4P3/PPPP1PPP/R1B1K1NR w KQkq - 1 6");
+
 
       // Move or defend knight
       // board.LoadPosition("r1b1kbnr/pp1ppppp/2n3q1/2Q5/4N3/4P3/PPPP1PPP/R1B1KBNR w KQkq - 1 6");
