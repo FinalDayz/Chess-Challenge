@@ -14,7 +14,6 @@ BRING BACK LOGS
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using ChessChallenge.API;
 
@@ -49,7 +48,7 @@ public class MyBot : IChessBot {
 
     if (prefMove != Move.NullMove) board.MakeMove(prefMove.GetValueOrDefault());
 
-    //Console.Write(node.move.toSANString(board.board) + ", ");
+    Console.Write(node.move.toSANString(board.board) + ", ");
     printNodeMoveRec(node._bestNode, board, node.move);
 
     if (prefMove != Move.NullMove) board.UndoMove(prefMove.GetValueOrDefault());
@@ -61,12 +60,15 @@ public class MyBot : IChessBot {
     Node rootNode = new Node(Move.NullMove, board.IsWhiteToMove ? 1 : -1, board, "", null);
 
     whenToStop = calculateWhenToStop(timer);
+    // whenToStop = 3500;
 #if CODE_FOR_DEBUG
     Random rnd = new Random();
-    whenToStop = rnd.Next(500, 1300);
-    // MAX_TIMEOUT_CHECKS = rnd.Next(124890, 124920);
-    MAX_TIMEOUT_CHECKS = 32530;
-    // whenToStop = 1186;
+    // whenToStop = rnd.Next(1000, 1900);
+    // MAX_TIMEOUT_CHECKS = rnd.Next(50000, 190000);
+    // whenToStop = rnd.Next(200, 1800);
+    // MAX_TIMEOUT_CHECKS = 32530;
+    // whenToStop = 99999;
+    // whenToStop = (int) Math.Round(whenToStop * 0.6);
 
     if (MAX_TIMEOUT_CHECKS != 0 && MAX_TIMEOUT_CHECKS != 9999999) {
       whenToStop = 10 * 60 * 1000;
@@ -75,15 +77,17 @@ public class MyBot : IChessBot {
     }
 #endif
 
+    Console.WriteLine("NNEvaluator:: " + Node.NNEvaluator(board));
+
     // whenToStop = 99999999;
 
-    //Console.WriteLine("whenToStop: " + whenToStop + " (MAX_TIMEOUT_CHECKS: " + MAX_TIMEOUT_CHECKS + ")");
+    Console.WriteLine("whenToStop: " + whenToStop + " (MAX_TIMEOUT_CHECKS: " + MAX_TIMEOUT_CHECKS + ")");
 
     // rootNode.negaMax(4, board, 0, float.MinValue, float.MaxValue);
     for (int i = 1; i <= 12; i++) {
-      //Console.WriteLine("Calculating depth: " + i + " left: " + (MAX_TIMEOUT_CHECKS - TIMEOUT_CHECKS));
+      Console.WriteLine("Calculating depth: " + i + " left: " + (MAX_TIMEOUT_CHECKS - TIMEOUT_CHECKS));
       rootNode.negaMax(i, board, 0, float.MinValue, float.MaxValue, true);
-      //Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
+      Console.Write("Depth " + i + ", score: " + -rootNode.moveScore + ", ");
 #if CODE_FOR_DEBUG
       if (timer.MillisecondsElapsedThisTurn * 1.3 >= whenToStop
        || TIMEOUT_CHECKS * 1.3 >= MAX_TIMEOUT_CHECKS)
@@ -102,24 +106,26 @@ public class MyBot : IChessBot {
     }
 
 
-    //Console.WriteLine();
+    Console.WriteLine();
 
     foreach (Node node in rootNode.childNodes) {
-      //Debug.Write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
+      double[] pieceValuesNN = { 0.167, 0.333, 0.5, 0.667, 0.833, 1 };
+      Console.Write(node.localPositionsEvaluated / 1000 + "k] move " + node.moveStr + ", score: " + -node.moveScore + " ::: ");
+
       // printNodeMoveRec(node, board, null);
-      //Debug.WriteLine("");
+      Console.WriteLine("");
     }
 
     Move bestMove = rootNode.bestMove;
     float bestMoveScore = rootNode.moveScore;
 
-    //Console.WriteLine("Best move has score of: " + bestMoveScore);
-    //Console.Write("Moves: ");
+    Console.WriteLine("Best move has score of: " + bestMoveScore);
+    Console.Write("Moves: ");
     printNodeMoveRec(rootNode._bestNode, board, null);
 
-    //Console.WriteLine();
+    Console.WriteLine();
 
-    //Console.WriteLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, Timeout checks: " + TIMEOUT_CHECKS / 1000 + "k (" + TIMEOUT_CHECKS_BEFORE_TIMEOUT + ")");
+    Console.WriteLine("That took " + timer.MillisecondsElapsedThisTurn + "ms, Timeout checks: " + TIMEOUT_CHECKS / 1000 + "k (" + TIMEOUT_CHECKS_BEFORE_TIMEOUT + ")");
 
     return bestMove;
   }
@@ -251,9 +257,9 @@ public class MyBot : IChessBot {
         // Special case where the best move is the node that ran out of time
         if (parent == null && node.didSkip && (-node.moveScore > moveScore) && moveScore != float.MinValue) {
 
-          //Console.WriteLine("Special case for move " + node.ToString() + " TIME:" + timer.MillisecondsElapsedThisTurn);
+          Console.WriteLine("Special case for move " + node.ToString() + " TIME:" + timer.MillisecondsElapsedThisTurn);
           node.negaMax(maxDepth, board, currentDepth + 1, -beta, -alpha, false);
-          //Console.WriteLine("Done with special case TIME:" + timer.MillisecondsElapsedThisTurn + " Is best move now? " + (-node.moveScore > moveScore));
+          Console.WriteLine("Done with special case TIME:" + timer.MillisecondsElapsedThisTurn + " Is best move now? " + (-node.moveScore > moveScore));
         }
 
         board.UndoMove(node.move);
@@ -300,26 +306,26 @@ public class MyBot : IChessBot {
             // }
 
             // if(same) {
-            //     //Console.WriteLine("Same!!");
+            //     Console.WriteLine("Same!!");
 
             // } else {
-            //     //Console.WriteLine("Not same...");
-            //     //Console.Write("Nodes: ");
+            //     Console.WriteLine("Not same...");
+            //     Console.Write("Nodes: ");
             //     for(int i = 0; i < nodes.Count; i++) {
-            //         //Console.Write(nodes[i].move.ToString()+", ");
+            //         Console.Write(nodes[i].move.ToString()+", ");
             //     }
-            //     //Console.WriteLine("");
-            //     //Console.Write("Temp : ");
+            //     Console.WriteLine("");
+            //     Console.Write("Temp : ");
             //     for(int i = 0; i < tmp.Count; i++) {
-            //         //Console.Write(tmp[i].move.ToString()+", ");
+            //         Console.Write(tmp[i].move.ToString()+", ");
             //     }
-            //     //Console.WriteLine();
+            //     Console.WriteLine();
             // }
       */
     }
 
     public float getBestGuessScore(Board board) {
-      if(parent?._bestNode == this)
+      if (parent?._bestNode == this)
         return -99;
 
       if (childNodes.Count != 0)
@@ -330,10 +336,62 @@ public class MyBot : IChessBot {
       }
 
       if (move.IsPromotion) {
-        return 20;
+        return -20;
       }
 
       return 5;
+    }
+
+    static double[] weights = new double[] {-3.8243027, -0.6259895, -0.37566727, -0.47239956, -0.710612, -0.5758254, -0.49746898, -0.48552105, -0.31978747, -0.20994039, -0.5355769, -0.45424956, -0.42631635, -0.56046224, -0.6795604, -0.63361347, -0.5480735, -0.38738698, -0.5245244, -0.5866182, -0.50744843, -0.4884331, -0.7585054, -0.4243735, -0.31372672, -0.38656205, -0.09686734, -0.39928794, -0.52974004, -0.32022175, -0.3146737, -0.028799485, -0.14767027, -0.07442546, -0.30939698, -0.2095173, -0.35186338, -0.47231293, -0.08722693, -0.1361358, 0.13320306, 0.25615627, -0.024895893, -0.090955496, -0.027596785, -0.04066336, 0.053523757, 0.09815753, 0.36272344, 0.15113983, -0.22285508, -0.069823176, -0.004971496, 0.012613961, 0.058946192, -0.111558296, 0.26935557, -0.006360631, 0.13891532, 0.05356277, -0.0586405, -0.009531236, 0.03171585, 0.21991906, 0.30777818, -0.23724122, 1.8934335, 1.8181429, 1.7498094, 1.2891629, 1.5213896, 1.5305052, 1.4873569, 1.6649748, 1.7719163, 1.6085633, 1.3221598, 1.3577207, 1.3075694, 1.1560344, 1.2549427, 1.6531312, 1.6038474, 1.3130639, 1.249512, 1.2322582, 1.2077931, 1.0964093, 1.1331843, 1.1932015, 1.3302195, 1.3028353, 1.2788702, 1.0867782, 0.9958304, 1.2437435, 1.1874086, 0.94614536, 1.1607695, 1.3847502, 1.2099602, 1.1520349, 1.1244527, 1.2745475, 1.3315276, 1.0963913, 1.4069846, 1.2718042, 1.1241181, 1.173396, 1.2873622, 1.0973805, 1.2091244, 1.064121, 1.3299385, 1.1970932, 1.1828874, 1.2240547, 1.1651374, 1.2055373, 1.1073042, 0.9624204, 0.98904115, 1.1299537, 1.0892638, 0.92628735, 0.93325883, 1.0078661, 0.6929659, 0.81907094, -1.0860262, -1.5291945, -1.5446526, -1.6386596, -1.8551036, -1.7345957, -1.7085259, -2.0434437, -1.7073328, -1.4838634, -1.7844384, -1.8936197, -1.7086681, -1.8077457, -1.9397616, -2.0209742, -1.7865292, -1.49778, -1.7573643, -1.9534856, -1.9061402, -1.8453404, -1.9846243, -1.9355063, -1.8656915, -1.7868335, -1.7992986, -1.9169385, -2.087083, -2.1349282, -1.9009427, -1.8497156, -2.0513508, -1.7891518, -1.7330034, -1.8609025, -2.0898051, -2.0801764, -1.8601754, -1.8775036, -1.9966334, -1.5667571, -1.8691453, -2.0709937, -1.9627656, -1.9729813, -2.1796844, -1.9631996, -1.8474096, -1.5257242, -1.8404092, -1.8675066, -1.8582761, -1.8634871, -1.7990979, -2.0603857, -1.7787601, -1.5466118, -1.5850449, -1.7040484, -1.9936635, -1.7697865, -1.7217851, -1.9216329, -1.5951719, -1.1914244, 2.666432, 2.7344306, 2.7740278, 2.9795916, 2.938009, 2.8177595, 3.115569, 2.857758, 2.5305629, 2.853426, 2.9638853, 2.821899, 2.951076, 3.0398848, 3.0847297, 2.8869607, 2.4795008, 2.8822198, 3.1135085, 3.0062573, 2.9625614, 3.1905782, 3.0466263, 2.8534997, 2.8403845, 2.8381302, 2.984906, 3.3043396, 3.2994637, 2.9622335, 2.854664, 3.0169375, 2.857739, 2.8350778, 2.9287636, 3.3008647, 3.2240858, 2.8612635, 2.9462435, 3.0213404, 2.5472572, 2.9354024, 3.2345693, 3.0728061, 3.0297847, 3.272788, 3.0252428, 2.8201957, 2.634069, 2.7969642, 2.9495656, 2.9289868, 2.9926245, 3.008207, 3.1194675, 2.8373182, 2.6750414, 2.7424686, 2.803549, 3.071774, 2.878654, 2.8415108, 2.9660394, 2.731547, 0.2011749, -0.5977932, -0.93059766, -0.86846846, -0.6380636, -0.64032054, -0.72724533, -0.5768038, -0.58396184, -1.0036402, -0.73376966, -0.89185554, -0.9268876, -0.8643057, -0.7554052, -0.7124735, -0.6994245, -1.0039701, -0.98224324, -0.81590515, -0.8991381, -0.9611139, -0.8169027, -0.9189856, -0.8771333, -0.88603586, -1.0237863, -0.90050524, -0.851748, -0.8120245, -0.9936836, -1.0776674, -0.8890886, -0.94460684, -0.98616403, -1.039382, -0.78711575, -0.84395194, -1.0271326, -0.9244701, -0.8803887, -1.1261092, -0.91802746, -0.77769256, -0.84677136, -0.8749024, -0.73675853, -0.8108007, -1.0569977, -1.2151271, -0.9400552, -0.94610137, -0.92844427, -0.85802037, -0.8985812, -0.7876744, -1.2209829, -1.0003076, -1.2001222, -1.0932157, -0.7619149, -1.0721552, -0.97180927, -1.1845021, -1.3053963, -0.40199274, 0.32173216, -0.5213129, 0.67815465, -0.45913598
+    };
+    static double[] bias = new double[] {
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+    };
+    static double[] pieceValuesNN = { 0.167, 0.333, 0.5, 0.667, 0.833, 1 };
+
+    public static double NNEvaluator(Board board) {
+
+      double[] input = new double[65];
+      input[0] = board.IsWhiteToMove ? 1 : -1;
+      for (int sideToMove = -1; sideToMove <= 1; sideToMove += 2)
+        for (int pieceType = 1; pieceType < 7; pieceType++)
+          for (ulong mask = board.GetPieceBitboard((PieceType)pieceType, sideToMove > 0); mask != 0;) {
+
+            int square = BitboardHelper.ClearAndGetIndexOfLSB(ref mask) ^ 56;
+            // Console.WriteLine("Piece " + pieceType + " sideToMove: " + sideToMove + " square + 1: " + (square + 1) + " pieceValue: " + (pieceValues[pieceType - 1] * sideToMove));
+            input[square + 1] = pieceValuesNN[pieceType - 1] * sideToMove;
+          }
+
+      // Console.WriteLine(String.Join("|", input));
+
+      // 0,6667|0|0|0|0|0|0|0,6667|
+      // 0|0,1667|0|1|0|0,1667|0,1667|0|
+      // 0|0,8333|0,1667|0,1667|0,5|0,3333|0,3333|0|
+      // 0|0|0|0|0,1667|0|0|0,1667|
+      // 0,1667|0|0|0|-0,1667|0|0|0|
+      // -0,1667|0|-0,3333|-0,1667|0,5|-0,3333|0|-0,1667|
+      // 0|-0,1667|-0,1667|0|0|0|-0,1667|-1|
+      // -0,6667 | 0 | -0,5 | -0,8333 | 0 | -0,5 | 0 | 0
+
+
+      var layerSize = new[] { 65, 5, 1 };
+      var layerOutputs = new[] { input, new double[20], new double[1] };
+
+      int weightIndex = 0;
+      int biasIndex = 0;
+      for (int outputLayer = 1; outputLayer < layerOutputs.Length; outputLayer++) {
+        for (int outputLayerY = 0; outputLayerY < layerSize[outputLayer]; outputLayerY++) {
+          for (int inputLayerY = 0; inputLayerY < layerSize[outputLayer - 1]; inputLayerY++) {
+
+            layerOutputs[outputLayer][outputLayerY] += layerOutputs[outputLayer - 1][inputLayerY] * weights[weightIndex];
+            weightIndex++;
+          }
+          layerOutputs[outputLayer][outputLayerY] = Math.Tanh(layerOutputs[outputLayer][outputLayerY] + bias[biasIndex]);
+          biasIndex++;
+        }
+      }
+
+      return layerOutputs[layerOutputs.Length - 1][0];
     }
 
     /*
@@ -370,10 +428,9 @@ public class MyBot : IChessBot {
     public float EvaluatePosition(Board board, int depth) {
       // TIMEOUT_CHECKS++;
       localPositionsEvaluated++;
-      // return Evaluate(board);
       int player = board.IsWhiteToMove ? 1 : -1;
 
-      float score = 0;
+
       if (board.IsInCheckmate()) {
         return -player * (99999999 - depth);
       }
@@ -381,32 +438,46 @@ public class MyBot : IChessBot {
       if (board.IsDraw()) {
         return 0;
       }
-      PieceList[] pieces = board.GetAllPieceLists();
 
-      for (int pieceCounter = 1; pieceCounter < pieceValues.Length; pieceCounter++) {
-        score += pieces[pieceCounter - 1].Count * pieceValues[pieceCounter]
-            - pieces[pieceCounter + 5].Count * pieceValues[pieceCounter];
-      }
+      return (float)NNEvaluator(board);
 
-      if (board.IsInCheck()) {
-        return score;
-      }
+      // float score = 0;
+      // PieceList[] pieces = board.GetAllPieceLists();
+
+      // for (int pieceCounter = 1; pieceCounter < pieceValues.Length; pieceCounter++) {
+      //   score += pieces[pieceCounter - 1].Count * pieceValues[pieceCounter]
+      //       - pieces[pieceCounter + 5].Count * pieceValues[pieceCounter];
+      // }
+
+      // if (board.IsInCheck()) {
+      //   return score;
+      // }
 
 
-      Span<Move> moves = stackalloc Move[100];
-      board.GetLegalMovesNonAlloc(ref moves);
+      // Span<Move> moves = stackalloc Move[100];
+      // board.GetLegalMovesNonAlloc(ref moves);
 
-      score += 0.001f * player * moves.Length;
+      // score += 0.001f * player * evaluateAvailableMoves(moves);
 
-      if (board.TrySkipTurn()) {
-        Span<Move> movesOtherPlayer = stackalloc Move[100];
-        board.GetLegalMovesNonAlloc(ref movesOtherPlayer);
-        score += 0.001f * -player * movesOtherPlayer.Length;
+      // if (board.TrySkipTurn()) {
+      //   Span<Move> movesOtherPlayer = stackalloc Move[100];
+      //   board.GetLegalMovesNonAlloc(ref movesOtherPlayer);
+      //   score += 0.001f * -player * evaluateAvailableMoves(movesOtherPlayer);
 
-        board.UndoSkipTurn();
-      }
+      //   board.UndoSkipTurn();
+      // }
 
-      return score;
+      // return score;// + (float)NNEvaluator(board);
+    }
+
+    private static readonly float[] movePieceTypePoints = { 0f, 1f, 3f, 3f, 3f, 3f, 1f };
+    private float evaluateAvailableMoves(Span<Move> moves) {
+      return moves.Length;
+      // float score = 0;
+      // foreach (Move move in moves) {
+      //   score += movePieceTypePoints[(int)move.MovePieceType];
+      // }
+      // return score;
     }
 
     public string ToString() {

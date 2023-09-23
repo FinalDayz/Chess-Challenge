@@ -97,8 +97,24 @@ namespace ChessChallenge.Application {
       moveHistory = "[Setup \"1\"]\n" +
         "[FEN \"" + board.GameStartFen + "\"]\n";
 
+      // board.LoadPosition("rnbq1rk1/pp2ppbp/5np1/2pp4/3P4/2N1BN2/PPP1PPPP/2RQKBR1 w - c6 0 7");
+
+      // Maked draw (threefold) instead of playing on in a winning position (white), black:Kg6
+      // board.LoadPosition("r1bq1b2/1pp3pk/p1npBn1p/P3p3/4P2P/1QPPBNN1/1P1K1PP1/R6R w - - 7 24");
+      // Console.WriteLine(Application.APIHelpers.MoveHelper.CreateMoveFromName("g3e2", new API.Board(board)).move);
+
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("g3e2", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("h7g6", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("e2g3", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("g6h7", new API.Board(board)).move, false);
+
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("g3e2", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("h7g6", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("e2g3", new API.Board(board)).move, false);
+      // board.MakeMove(Application.APIHelpers.MoveHelper.CreateMoveFromName("g6h7", new API.Board(board)).move, false);
+
       // Doesnt capture bishop back
-      board.LoadPosition("r2q1rk1/p3nppp/Bp2pn2/8/3b3P/P1N1QbP1/1BP2P2/R4RK1 w - - 0 16");
+      // board.LoadPosition("r2q1rk1/p3nppp/Bp2pn2/8/3b3P/P1N1QbP1/1BP2P2/R4RK1 w - - 0 16");
 
       // Blunders queen
       // board.LoadPosition("r1bqk2r/ppp2ppp/2nb1n2/1B1Np2Q/8/4P3/PPPP1PPP/R1B1K1NR w KQkq - 1 6");
@@ -173,6 +189,7 @@ namespace ChessChallenge.Application {
       // Start
       isPlaying = true;
       NotifyTurnToMove();
+
     }
 
     void BotThinkerThread() {

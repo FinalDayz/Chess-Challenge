@@ -2,6 +2,7 @@
 using System.Numerics;
 using System;
 using System.IO;
+using ChessChallenge.benchmark;
 
 namespace ChessChallenge.Application
 {
@@ -28,6 +29,10 @@ namespace ChessChallenge.Application
             if (NextButtonInRow("MyBot vs EvilBot", ref buttonPos, spacing, buttonSize))
             {
                 controller.StartNewBotMatch(ChallengeController.PlayerType.MyBot, ChallengeController.PlayerType.EvilBot);
+            }
+            if (NextButtonInRow("Stockfish benchmark", ref buttonPos, spacing, buttonSize))
+            {
+                StockfishTester.StartBenchmark();
             }
 
             // Page buttons

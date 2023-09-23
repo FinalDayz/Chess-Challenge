@@ -10,7 +10,7 @@ namespace ChessChallenge.Application
         public const int GameDurationMilliseconds = 
         // 99999999;
         // 60 * 1000;
-        30 * 1000;
+        30 * 1000 * 3;
         public const int IncrementMilliseconds = 
         // 0 * 1000;
           150;
